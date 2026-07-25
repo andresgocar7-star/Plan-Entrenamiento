@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Entrenamiento</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0c10">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <style>
+        /* TEMA DINÁMICO (Cambia según la pestaña) */
+        :root {
+            --bg-main: #0a0c10;
+            --bg-card: #12151c;
+            --text-main: #e8e8e8;
+            --text-muted: #9ba1a6;
+            
+            /* Colores por defecto (Rojo - Rutina) */
+            --theme-accent: #ff3333;
+            --theme-border: #cc0000;
+            --theme-tint: rgba(255, 51, 51, 0.08);
+            --theme-text-light: #ffd9d9;
+        }
+
+        body.theme-rutina {
+            --theme-accent: #ff3b3b; --theme-border: #cc0000; --theme-tint: rgba(255, 59, 59, 0.08); --theme-text-light: #ffcccc;
+        }
+        body.theme-calistenia {
+            --theme-accent: #1aff1a; --theme-border: #00b300; --theme-tint: rgba(26, 255, 26, 0.08); --theme-text-light: #ccffcc;
+        }
+        body.theme-estiramiento {
+            --theme-accent: #c44dff; --theme-border: #8600d4; --theme-tint: rgba(196, 77, 255, 0.08); --theme-text-light: #ebd9ff;
+        }
+        body.theme-dieta {
+            --theme-accent: #ff9d00; --theme-border: #cc7a00; --theme-tint: rgba(255, 157, 0, 0.08); --theme-text-light: #ffe6cc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.5;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* NAVEGACIÓN Y TABS */
+        .tabs {
+            display: flex; background: #050608; border-bottom: 2px solid #222;
+            overflow-x: auto; position: sticky; top: 0; z-index: 100;
+        }
+        .tab-btn {
+            flex: 1; min-width: 90px; padding: 12px 8px; background: transparent; border: none;
+            color: #777; font-size: 11px; font-weight: bold; text-transform: uppercase;
+            letter-spacing: 1px; cursor: pointer; border-bottom: 3px solid transparent;
+            transition: all 0.3s ease; white-space: nowrap;
+        }
+        .tab-btn.active { color: #fff; border-bottom: 3px solid var(--theme-accent); background: var(--theme-tint); }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container { max-width: 750px; margin: 0 auto; padding: 20px 15px; }
+
+        /* BANNER PRINCIPAL DINÁMICO */
+        .main-banner {
+            border: 3px solid var(--theme-border); background: var(--theme-tint); border-radius: 12px;
+            padding: 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 0 15px var(--theme-tint);
+            position: relative; overflow: hidden; margin-bottom: 25px; transition: all 0.3s ease;
+        }
+        .main-banner::before { content: '🏋️'; position: absolute; font-size: 120px; right: -15px; top: -30px; opacity: 0.1; }
+        .btn-backup-icon {
+            position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%;
+            background: rgba(0,0,0,0.4); border: 1px solid var(--theme-border); color: var(--theme-accent);
+            font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .btn-backup-icon:hover { background: var(--theme-accent); color: #000; }
+        .main-banner h1 { color: var(--theme-accent); font-size: 26px; text-transform: uppercase; letter-spacing: 2px; margin: 0; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .main-banner p { color: #e8e8e8; font-size: 13px; margin-top: 5px; opacity: 0.9; }
+
+        /* ENCABEZADOS DE DÍA Y PROGRESIÓN */
+        .day-header {
+            background: var(--theme-tint); border: 1px solid var(--theme-border);
+            border-left: 5px solid var(--theme-accent); border-radius: 8px; padding: 15px; margin-bottom: 15px;
+        }
+        .day-header h2 { margin: 0; font-size: 18px; color: var(--theme-accent); }
+        .day-header p.obj { margin: 5px 0 0; color: var(--theme-text-light); font-size: 13px; opacity: 0.9; }
+        .day-header p.eq { margin: 5px 0 0; color: #aaa; font-size: 12px; }
+
+        .progresion-box {
+            background: #11151c; border: 1px solid var(--theme-accent); border-radius: 8px;
+            padding: 14px; margin-bottom: 15px; box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
+        }
+        .progresion-box-title { font-weight: bold; color: var(--theme-accent); font-size: 13px; margin-bottom: 8px; }
+        .progresion-box-text { font-size: 12px; color: var(--theme-text-light); line-height: 1.6; }
+
+        /* BANNER DIETA */
+        .dieta-header-box {
+            background: linear-gradient(135deg, rgba(255,157,0,0.1) 0%, rgba(204,122,0,0.2) 100%);
+            border: 2px solid var(--theme-border); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;
+        }
+        .dieta-header-box h2 { margin: 0 0 10px 0; color: var(--theme-accent); font-size: 20px; font-weight: 800; text-transform: uppercase; }
+        .dieta-stats { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .dieta-stat-item {
+            background: rgba(0,0,0,0.5); border: 1px solid var(--theme-accent); padding: 8px 15px;
+            border-radius: 20px; font-size: 13px; font-weight: bold; color: var(--theme-text-light);
+        }
+
+        /* DÍAS SELECTOR */
+        .day-selector { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .day-btn {
+            padding: 8px 14px; border: 1px solid #333; border-radius: 6px; background: #1a1a1a;
+            color: #aaa; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s;
+        }
+        .day-btn.active { background: var(--theme-border); border-color: var(--theme-accent); color: white; box-shadow: 0 0 10px var(--theme-tint); }
+
+        /* TARJETAS (EJERCICIOS/COMIDAS) Y DRAG & DROP */
+        .card {
+            background: var(--bg-card); border: 1px solid #2a2f3a; border-radius: 8px;
+            margin-bottom: 10px; overflow: hidden; transition: transform 0.2s, opacity 0.2s;
+        }
+        .card.dragging { opacity: 0.4; transform: scale(0.98); border: 2px dashed var(--theme-accent); }
+        .card.drag-over { border-top: 4px solid var(--theme-accent); }
+
+        .card-header {
+            padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between;
+            align-items: center; border-left: 3px solid #333; transition: all 0.2s;
+        }
+        .card.expanded .card-header { border-left-color: var(--theme-accent); background: #181c25; }
+        
+        .card-title-wrap { display: flex; align-items: center; }
+        .drag-handle {
+            display: none; cursor: grab; padding-right: 12px; font-size: 20px; color: var(--theme-accent); user-select: none;
+        }
+        body.modo-edicion .drag-handle { display: inline-block; }
+        .drag-handle:active { cursor: grabbing; }
+
+        .card-title { font-weight: bold; font-size: 14px; color: #fff; transition: color 0.2s; }
+        .card.expanded .card-title { color: var(--theme-accent); }
+        .card-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+        
+        .card-actions { display: flex; gap: 8px; align-items: center; }
+        .action-btn { display: none; padding: 6px 8px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        body.modo-edicion .action-btn { display: inline-block; }
+        .edit-btn { background: var(--theme-accent); color: white; }
+        .edit-btn:hover { opacity: 0.8; }
+        .delete-btn { background: #d10000; color: white; }
+        .delete-btn:hover { background: #ff0000; }
+        .expand-icon { font-size: 14px; color: var(--theme-border); margin-left: 5px; }
+
+        .card-body { padding: 15px; border-top: 1px solid #2a2f3a; display: none; background: #0f1218; }
+        .card.expanded .card-body { display: block; }
+
+        /* ESTILOS INTERNOS DE TARJETA */
+        .info-box { background: #161b22; border-radius: 6px; padding: 12px; margin-top: 10px; }
+        .info-box-title { font-size: 11px; color: var(--theme-accent); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        .info-text { font-size: 13px; color: var(--theme-text-light); line-height: 1.5; }
+        .tip-row { display: flex; gap: 8px; margin-bottom: 5px; font-size: 13px; color: var(--theme-text-light); }
+        .tip-icon { color: var(--theme-accent); flex-shrink: 0; }
+        .btn-youtube {
+            display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;
+            background: #d10000; color: white; text-decoration: none; font-size: 12px;
+            font-weight: bold; padding: 8px 14px; border-radius: 6px; transition: background 0.2s;
+        }
+        .btn-youtube:hover { background: #ff0000; }
+
+        /* BOTÓN FLOTANTE AJUSTES */
+        .btn-flotante {
+            position: fixed; bottom: 20px; right: 20px; background: var(--theme-accent);
+            color: #fff; border: none; border-radius: 50%; width: 55px; height: 55px;
+            font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 1000; transition: transform 0.3s, background 0.3s; display: flex; align-items: center; justify-content: center;
+        }
+        body.modo-edicion .btn-flotante { transform: rotate(90deg); box-shadow: 0 0 20px var(--theme-accent); }
+
+        /* BOTÓN AGREGAR NUEVO */
+        .btn-add-new {
+            display: none; width: 100%; padding: 14px; background: var(--theme-tint);
+            border: 2px dashed var(--theme-accent); color: var(--theme-accent); border-radius: 8px;
+            font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 14px; transition: 0.2s;
+        }
+        .btn-add-new:hover { background: var(--theme-accent); color: white; border-style: solid; }
+        body.modo-edicion .btn-add-new { display: block; }
+        
+        /* Modales */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: var(--bg-card); border: 1px solid var(--theme-border); padding: 20px;
+            border-radius: 8px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto;
+        }
+        .modal label { font-size: 12px; color: #aaa; margin-bottom: 4px; display: block; }
+        .modal input, .modal textarea {
+            width: 100%; padding: 10px; margin-bottom: 12px; background: #0a0c10;
+            border: 1px solid #333; color: white; border-radius: 4px; font-family: inherit;
+        }
+        .modal input:focus, .modal textarea:focus { outline: none; border-color: var(--theme-accent); }
+        .modal button {
+            width: 100%; padding: 12px; background: var(--theme-accent); color: white;
+            border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 5px;
+        }
+        .close-modal { background: transparent !important; border: 1px solid #555 !important; color: #ccc !important; }
+
+        /* DESPLEGABLES (Recordatorio Dieta / Balance General) */
+        .caja-desplegable {
+            background: #11151c; border: 1px solid var(--theme-accent); border-radius: 8px;
+            margin-bottom: 15px; overflow: hidden;
+        }
+        .caja-desplegable summary {
+            padding: 14px; cursor: pointer; font-weight: bold; font-size: 13px; color: var(--theme-accent);
+            list-style: none; display: flex; align-items: center; justify-content: space-between;
+        }
+        .caja-desplegable summary::-webkit-details-marker { display: none; }
+        .caja-desplegable summary::after { content: '▼'; font-size: 11px; transition: transform 0.2s; }
+        .caja-desplegable[open] summary::after { transform: rotate(180deg); }
+        .caja-desplegable-body { padding: 0 14px 14px; }
+        .tabla-comparativa { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .tabla-comparativa th, .tabla-comparativa td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #262b35; }
+        .tabla-comparativa th { color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+        .tabla-comparativa td { color: var(--theme-text-light); }
+        .tabla-comparativa tr:last-child td { border-bottom: none; }
+    </style>
+</head>
+<body class="theme-rutina">
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('rutina')">🏋️ Rutina</button>
+        <button class="tab-btn" onclick="switchTab('calistenia')">🏠 Calistenia</button>
+        <button class="tab-btn" onclick="switchTab('estiramiento')">🧘 Estiram.</button>
+        <button class="tab-btn" onclick="switchTab('dieta')">🍽️ Dieta</button>
+    </div>
+
+    <div class="container">
+        
+        <div class="main-banner">
+            <button class="btn-backup-icon" onclick="descargarHTML()" title="Descargar app completa">💾</button>
+            <h1>Plan Entrenamiento</h1>
+        </div>
+
+        <div id="content"></div>
+
+    </div>
+
+    <button class="btn-flotante" onclick="toggleEditMode()" title="Ajustes">⚙️</button>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content" id="modal-fields"></div>
+    </div>
+
+    <script>
+        // BASE DE DATOS INTACTA
+        const defaultDB = {
+            rutina: [
+                {
+                    name: "LUNES", emoji: "💪", focus: "Torso A (Enfoque Empuje / Tirón)", objetivo: "Duración estimada: 70–75 min",
+                    exercises: [
+                        { name: "Press de banca con barra", series: "3", reps: "6–8", descanso: "90–120s", how: "Acuéstate en el banco. Agarra la barra un poco más ancha que tus hombros. Baja la barra lentamente hasta tocar el pecho (2 seg), pausa 1 seg, empuja hacia arriba en 1 seg. Mantén los pies en el suelo y la espalda con una leve curva natural.", tips: [], video: "https://www.youtube.com/results?search_query=press+banca+barra+tecnica+correcta+español" },
+                        { name: "Remo con barra", series: "3", reps: "6–8", descanso: "90s", how: "Inclínate hacia adelante ~45° con la barra en manos, agarre ancho. Jala la barra hacia el abdomen (ombligo), apretando los omóplatos al final. Baja lento. La espalda SIEMPRE recta.", tips: [], video: "https://www.youtube.com/results?search_query=remo+con+barra+técnica+espalda+español" },
+                        { name: "Press inclinado con mancuernas", series: "3", reps: "8–10", descanso: "75–90s", how: "Banco inclinado a 30-45°. Sujeta una mancuerna en cada mano a la altura del pecho. Empuja hacia arriba y al centro (las mancuernas casi se tocan arriba). Baja lento controlando el movimiento.", tips: [], video: "https://www.youtube.com/results?search_query=press+inclinado+mancuernas+técnica+español" },
+                        { name: "Jalón al pecho en polea", series: "3", reps: "10–12", descanso: "75s", how: "Siéntate en la máquina, agarra la barra ancha por encima. Jala la barra hacia el pecho superior inclinándote ligeramente atrás, apretando los omóplatos abajo. Sube lento resistiendo el peso.", tips: [], video: "https://www.youtube.com/results?search_query=jalón+al+pecho+polea+técnica+dorsal" },
+                        { name: "Elevaciones laterales con mancuerna", series: "3", reps: "12–15", descanso: "60s", how: "De pie, con una mancuerna en cada mano a los lados. Sube los brazos lateralmente hasta quedar en cruz (hombro de altura), luego baja lento (2 seg). El codo ligeramente doblado.", tips: [], video: "https://www.youtube.com/results?search_query=elevaciones+laterales+hombros+técnica+correcta" },
+                        { name: "Extensión de tríceps en polea / barra", series: "3", reps: "10–12", descanso: "60s", how: "De pie frente a la polea alta, agarra la cuerda o barra. Codos pegados a los lados del cuerpo (esto es clave). Extiende los brazos hacia abajo completamente, luego sube controlado.", tips: [], video: "https://www.youtube.com/results?search_query=extensión+triceps+polea+técnica+español" },
+                        { name: "Curl de bíceps con mancuernas", series: "3", reps: "10–12", descanso: "60s", how: "De pie, mancuernas a los lados. Sube una a la vez o las dos juntas doblando el codo, sin mover el hombro. Gira la muñeca hacia arriba al subir (supinación). Baja lento.", tips: [], video: "https://www.youtube.com/results?search_query=curl+biceps+mancuernas+técnica+correcta" }
+                    ]
+                },
+                {
+                    name: "MARTES", emoji: "🦵", focus: "Pierna A (Dominante Cuádriceps / Isquios + Activación Neural)", objetivo: "Duración estimada: 70–75 min",
+                    exercises: [
+                        { name: "Activación de potencia (Saltos al cajón / verticales)", series: "3", reps: "3", descanso: "90s", how: "", tips: [], video: "" },
+                        { name: "Sentadilla con barra libre", series: "4", reps: "6–8", descanso: "120s", how: "Barra en los trapecios (detrás del cuello). Pies a la anchura de los hombros, punteras ligeramente hacia afuera. Baja 3 seg como si te sentaras en una silla, rodillas siguiendo la dirección de los pies, hasta que los muslos queden paralelos al suelo. Sube en 1 seg.", tips: [], video: "https://www.youtube.com/results?search_query=sentadilla+barra+libre+técnica+principiantes+español" },
+                        { name: "Peso muerto rumano con mancuernas", series: "3", reps: "8–10", descanso: "90s", how: "De pie con mancuernas al frente. Inclina el torso hacia adelante manteniendo la espalda RECTA (no redonda), mancuernas cerca de las piernas, hasta sentir estiramiento en los isquiotibiales (parte trasera del muslo). Vuelve a la posición inicial.", tips: [], video: "https://www.youtube.com/results?search_query=peso+muerto+rumano+mancuernas+técnica" },
+                        { name: "Prensa de piernas o Zancadas pesadas", series: "3", reps: "10–12", descanso: "75s", how: "Prensa: Siéntate en la máquina, pies a la anchura de los hombros en la plataforma. Baja el peso lento hasta ~90° de rodilla, empuja sin bloquear las rodillas al final. Zancada: Da un paso largo hacia adelante, baja la rodilla trasera casi al suelo, vuelve al centro.", tips: [], video: "https://www.youtube.com/results?search_query=prensa+piernas+máquina+técnica+español" },
+                        { name: "Curl femoral en máquina", series: "3", reps: "10–12", descanso: "60s", how: "Acostado boca abajo en la máquina. Rodillas justo al borde del asiento. Dobla las rodillas jalando el peso hacia los glúteos, pausa arriba, baja lento.", tips: [], video: "https://www.youtube.com/results?search_query=curl+femoral+máquina+técnica+isquiotibiales" },
+                        { name: "Elevación de pantorrillas de pie", series: "4", reps: "12–15", descanso: "60s", how: "De pie con la punta del pie en un escalón o plataforma. Sube lento en puntas de pie (2 seg), mantén arriba 1 seg, baja completamente sintiendo el estiramiento (2 seg).", tips: [], video: "https://www.youtube.com/results?search_query=elevación+pantorrillas+gemelos+técnica" },
+                        { name: "Rueda Abdominal", series: "3", reps: "8–10", descanso: "60s", how: "", tips: [], video: "" }
+                    ]
+                },
+                {
+                    name: "MIÉRCOLES", emoji: "🥋", focus: "Potencia Específica + Taekwondo & Movilidad", objetivo: "Duración estimada: 65–75 min", tkdDay: true,
+                    exercises: [
+                        { name: "Depth Jumps (Saltos reactivos desde cajón de 20-30 cm)", series: "3", reps: "4", descanso: "120s", how: "", tips: [], video: "" },
+                        { name: "Bounding (Saltos horizontales a una pierna)", series: "3", reps: "4 por pierna", descanso: "120s", how: "", tips: [], video: "" },
+                        { name: "Patadas de velocidad a peto/pao (100% explosividad)", series: "3", reps: "5 por pierna", descanso: "90–120s", how: "", tips: [], video: "" },
+                        { name: "Activación de pie técnico (filo, bola, talón)", series: "2", reps: "15 por posición/pie", descanso: "30s", how: "Sentado o de pie. Practica las 3 posiciones: Bola (empeine estirado), Filo (tobillo hacia afuera), Talón (pie en flex). Mantén 2 segundos, relaja.", tips: [], tkdNote: "Corrige tu dificultad para mostrar filo, bola o talón al golpear.", video: "https://www.youtube.com/results?search_query=posición+pie+taekwondo+filo+bola+talón+técnica" },
+                        { name: "Flexibilidad activa (patada lenta frontal)", series: "3", reps: "8 por pierna", descanso: "45s", how: "Apoyado en la pared con una mano. Sube la pierna al frente LENTAMENTE con la rodilla recta. Mantén 3 segundos en el punto más alto. Baja lento.", tips: [], tkdNote: "Ataca directamente: altura de patada, sostener pierna en el aire, y posición de bola.", video: "https://www.youtube.com/results?search_query=patada+frontal+lenta+flexibilidad+activa+taekwondo" },
+                        { name: "Flexibilidad activa (patada lateral lenta)", series: "3", reps: "8 por pierna", descanso: "45s", how: "De lado a la pared. Sube la pierna lateralmente con el pie en filo. Lento, sin impulso. Mantén arriba. Baja lento.", tips: [], tkdNote: "Trabaja específicamente el filo del pie y la patada lateral.", video: "https://www.youtube.com/results?search_query=patada+lateral+lenta+yeop+chagi+flexibilidad+taekwondo" },
+                        { name: "Rodilla al pecho con resistencia (Yop chagi prep)", series: "4", reps: "10 por pierna", descanso: "45s", how: "De pie. Sube una rodilla hacia el pecho lo más alto posible, abraza la rodilla con las manos y jala hacia el pecho 1 segundo. Suelta y baja controlado.", tips: [], tkdNote: "Ataca directamente el problema de recoger la rodilla al pecho.", video: "https://www.youtube.com/results?search_query=rodilla+al+pecho+ejercicio+cadera+flexión+taekwondo" },
+                        { name: "Encadenamientos técnicos (combos x2 patadas)", series: "4", reps: "6 combos por pierna", descanso: "60s", how: "Elige 2 patadas para encadenar (ej: dollyo + yeop). Ejecuta la primera lento, SIN bajar la pierna, y haz la segunda. La clave: la rodilla regresa al pecho entre patadas (cámara).", tips: [], tkdNote: "Ataca la dificultad de encadenamientos sin bajar la pierna.", video: "https://www.youtube.com/results?search_query=encadenamiento+patadas+taekwondo+camara+técnica" }
+                    ]
+                },
+                {
+                    name: "JUEVES", emoji: "🔥", focus: "Torso B (Enfoque Tracción / Deltoides)", objetivo: "Duración estimada: 75–80 min",
+                    exercises: [
+                        { name: "Press militar con mancuernas o barra", series: "3", reps: "8–10", descanso: "90s", how: "", tips: [], video: "" },
+                        { name: "Dominadas o Jalón al pecho agarre neutro", series: "3", reps: "8–10", descanso: "90s", how: "", tips: [], video: "" },
+                        { name: "Fondos en barras paralelas (Dips)", series: "3", reps: "8–10", descanso: "75s", how: "", tips: [], video: "" },
+                        { name: "Remo horizontal en polea (Gironda)", series: "3", reps: "10–12", descanso: "75s", how: "", tips: [], video: "" },
+                        { name: "Elevaciones laterales (cable o mancuerna)", series: "3", reps: "12–15", descanso: "60s", how: "", tips: [], video: "" },
+                        { name: "Pájaros (Deltoides posterior)", series: "3", reps: "12–15", descanso: "60s", how: "", tips: [], video: "" },
+                        { name: "Biserie: Press francés (tríceps) + Curl martillo (bíceps)", series: "3", reps: "10-12 + 10-12", descanso: "60s entre biserie", how: "", tips: [], video: "" }
+                    ]
+                },
+                {
+                    name: "VIERNES", emoji: "🎯", focus: "Pierna B (Dominante Cadera / Posterior + Activación Neural)", objetivo: "Duración estimada: 70–75 min",
+                    exercises: [
+                        { name: "Activación de potencia (Saltos horizontales / Zancadas pliométricas)", series: "3", reps: "3 por pierna", descanso: "90s", how: "", tips: [], video: "" },
+                        { name: "Peso muerto convencional o Sumo", series: "3", reps: "6–8", descanso: "120s", how: "", tips: [], video: "" },
+                        { name: "Sentadilla Búlgara o Goblet Squat pesada", series: "3", reps: "8–10", descanso: "90s", how: "", tips: [], video: "" },
+                        { name: "Curl femoral tumbado o sentado", series: "3", reps: "10–12", descanso: "60s", how: "", tips: [], video: "" },
+                        { name: "Zancadas explosivas / Step-ups con peso", series: "3", reps: "10–12", descanso: "75s", how: "", tips: [], video: "" },
+                        { name: "Elevación de pantorrillas", series: "4", reps: "12–15", descanso: "60s", how: "De pie con la punta del pie en un escalón o plataforma. Sube lento en puntas de pie (2 seg), mantén arriba 1 seg, baja completamente sintiendo el estiramiento (2 seg).", tips: [], video: "https://www.youtube.com/results?search_query=elevación+pantorrillas+gemelos+técnica" },
+                        { name: "Hollow Body Plank / Plancha con Arrastre", series: "3", reps: "45–60s", descanso: "60s", how: "", tips: [], video: "" }
+                    ]
+                }
+            ],
+            balanceGeneral: [
+                { grupo: "Pecho", series: "9 series", dias: "Lunes (6) / Jueves (3)", estado: "✅ Frecuencia 2 Cumplida" },
+                { grupo: "Espalda", series: "12 series", dias: "Lunes (6) / Jueves (6)", estado: "✅ Frecuencia 2 Cumplida" },
+                { grupo: "Deltoides (Lateral/Post.)", series: "12 series", dias: "Lunes (3) / Jueves (9)", estado: "✅ Frecuencia 2 Cumplida" },
+                { grupo: "Tríceps", series: "6 directas (+ empujes)", dias: "Lunes (3) / Jueves (3)", estado: "✅ Frecuencia 2 Cumplida" },
+                { grupo: "Bíceps", series: "6 directas (+ tirones)", dias: "Lunes (3) / Jueves (3)", estado: "✅ Frecuencia 2 Cumplida" },
+                { grupo: "Cuádriceps", series: "13 series", dias: "Martes (7) / Viernes (6)", estado: "✅ Frecuencia 2 Cumplida" },
+                { grupo: "Isquiotibiales", series: "12 series", dias: "Martes (6) / Viernes (6)", estado: "✅ Frecuencia 2 Cumplida" },
+                { grupo: "Gemelos", series: "8 series", dias: "Martes (4) / Viernes (4)", estado: "✅ Frecuencia 2 Cumplida" }
+            ],
+            calistenia: [
+                {
+                    name: "LUNES", emoji: "🔥", focus: "Empuje — Pecho, Hombros, Tríceps", objetivo: "Fuerza de empuje con peso corporal + carga libre", equipamiento: "Barras paralelas · Anillos · Barra + discos · Balón",
+                    exercises: [
+                        { name: "Fondos en barras paralelas", series: "4", reps: "6–10", tempo: "2-1-1", descanso: "90s", how: "Agarra las barras. Baja doblando los codos hasta que los hombros queden al nivel de las manos (~90°). Empuja de vuelta. Inclínate hacia adelante para pecho.", tips: ["Controla el descenso", "Codos apuntando hacia atrás"], pesoNota: "Añade costal de 20kg cuando domines 10 reps limpias.", video: "https://www.youtube.com/results?search_query=fondos+barras+paralelas+técnica" },
+                        { name: "Press de pecho en anillos", series: "3", reps: "8–10", tempo: "2-1-1", descanso: "75s", how: "Cuelga los anillos a altura del pecho. Agárralos inclinando el cuerpo hacia adelante. Baja el pecho entre los anillos doblando codos, empuja.", tips: ["Gira muñecas hacia afuera al extender", "A menor altura, mayor dificultad"], video: "https://www.youtube.com/results?search_query=press+pecho+anillos+gimnásticos" },
+                        { name: "Press militar con barra", series: "3", reps: "8–10 ⚡", tempo: "2-1-1", descanso: "90s", how: "De pie, barra al frente en hombros. Empuja hacia arriba hasta extender los brazos. Baja controlado.", tips: ["No arquees la espalda baja al subir", "Construye hombros sólidos para bloqueos"], pesoNota: "Empieza con la barra sola, luego suma discos pequeños.", video: "https://www.youtube.com/results?search_query=press+militar+barra+de+pie" },
+                        { name: "Elevaciones laterales con discos", series: "3", reps: "12–15", tempo: "2-1-2", descanso: "60s", how: "De pie, disco en cada mano. Sube brazos lateralmente en cruz. Baja lento.", tips: ["Codo más alto que la muñeca", "Técnica estricta vale más que peso"], video: "https://www.youtube.com/results?search_query=elevaciones+laterales+hombros" },
+                        { name: "Extensión de tríceps en polea alta", series: "3", reps: "12–15", tempo: "2-1-1", descanso: "60s", how: "Frente a polea alta. Codos pegados a los costados. Extiende brazos abajo, sube controlado.", tips: ["Codos como bisagra, sin desplazarse"], video: "https://www.youtube.com/results?search_query=extensión+tríceps+polea+alta" },
+                        { name: "Lanzamiento balón contra pared", series: "3", reps: "10", tempo: "Explosivo", descanso: "60s", how: "Sujeta balón de 10kg en el pecho. Lánzalo con fuerza contra la pared y atrápalo.", tips: ["Potencia pura", "Transfiere a explosividad en combate"], video: "https://www.youtube.com/results?search_query=lanzamiento+balón+medicinal+pared" }
+                    ]
+                },
+                {
+                    name: "MARTES", emoji: "🦵", focus: "Tren Inferior + Fuerza Base", objetivo: "Construir masa en piernas y cadena posterior", equipamiento: "Pesa rusa · Costal 20kg · Barra",
+                    exercises: [
+                        { name: "Sentadilla con costal", series: "4", reps: "8–10 ⚡", tempo: "3-1-1", descanso: "90s", how: "Carga el costal (20kg) al pecho. Baja en sentadilla profunda y erguida. Sube empujando desde talones.", tips: ["Activa el core muchísimo", "Rodillas en dirección a los pies"], pesoNota: "Si 20kg es mucho, usa la pesa rusa de 10kg modo goblet.", video: "https://www.youtube.com/results?search_query=sentadilla+sandbag+costal" },
+                        { name: "Peso muerto rumano con costal/barra", series: "3", reps: "8–10", tempo: "3-1-1", descanso: "90s", how: "Inclina el torso adelante con espalda recta. Siente estirón en isquiotibiales y sube.", tips: ["Empuja cadera hacia atrás", "Clave para frenar patadas"], video: "https://www.youtube.com/results?search_query=peso+muerto+rumano" },
+                        { name: "Zancadas caminando con carga", series: "3", reps: "10 por pierna", tempo: "2-1-1", descanso: "75s", how: "Paso largo adelante, baja cadera. Torso recto. Avanza.", tips: ["No dejes que rodilla delantera colapse", "Costal o pesa rusa en mano"], video: "https://www.youtube.com/results?search_query=zancada+caminando+walking+lunge" },
+                        { name: "Swing de pesa rusa (10kg)", series: "4", reps: "12", tempo: "Explosivo", descanso: "90s", how: "Bisagra de cadera. Empuja caderas explosivamente para subir la pesa. Brazos solo son cuerdas.", tips: ["Simula el empuje de cadera de patadas circulares"], video: "https://www.youtube.com/results?search_query=swing+pesa+rusa+kettlebell" },
+                        { name: "Elevación de pantorrillas en escalón", series: "3", reps: "15", tempo: "2-1-2", descanso: "60s", how: "Puntas en escalón, baja talones. Sube completo, mantén, baja.", tips: ["Rango de movimiento completo genera masa"], video: "https://www.youtube.com/results?search_query=elevación+pantorrillas+escalón" }
+                    ]
+                },
+                {
+                    name: "MIÉRCOLES", emoji: "🏗️", focus: "Jalón + Core Funcional", objetivo: "Tracción de espalda y compresión abdominal", equipamiento: "Barra dominadas · Anillos · Máquina Abdominal · Rueda",
+                    exercises: [
+                        { name: "Dominada en barra", series: "4", reps: "5–8 ⚡", tempo: "2-1-2", descanso: "90s", how: "Agarre prono. Jálate hasta pasar el mentón. Baja lento 2 seg.", tips: ["Mete omóplatos hacia abajo primero", "Constructor de espalda top"], pesoNota: "Al pasar 10 reps, cuélgate la pesa rusa de 10kg.", video: "https://www.youtube.com/results?search_query=dominadas+técnica+completa" },
+                        { name: "Remo en anillos", series: "3", reps: "10–12", tempo: "2-1-2", descanso: "75s", how: "Cuelga anillos a la cintura. Extiende cuerpo, talones al suelo. Jala pecho hacia anillos.", tips: ["Cuerpo más horizontal = más peso", "Pecho hacia afuera"], video: "https://www.youtube.com/results?search_query=remo+anillos+gimnásticos" },
+                        { name: "Remo con barra (Pendlay)", series: "3", reps: "8", tempo: "2-1-1", descanso: "90s", how: "Barra en el suelo. Torso paralelo al piso. Jala barra directo al abdomen y baja al piso en cada rep.", tips: ["Aisla los dorsales sin levantar el torso"], video: "https://www.youtube.com/results?search_query=remo+pendlay+barra" },
+                        { name: "Curl de bíceps con barra", series: "3", reps: "12", tempo: "2-1-2", descanso: "60s", how: "Agarre supino. Codos pegados a costillas. Sube barra y baja controlando.", tips: ["No te balancees con la espalda"], video: "https://www.youtube.com/results?search_query=curl+biceps+barra" },
+                        { name: "Máquina de Abdominales (Lento)", series: "3", reps: "12–15", tempo: "1-1-3", descanso: "60s", how: "Apoya rodillas. Sube explosivo, pausa, baja MUY lento resistiendo (3 seg).", tips: ["El trabajo está en la bajada", "Fortalece el psoas para la cámara de pateo"], tkdNote: "Tu mejor aliado en casa para fuerza de cadera.", video: "https://www.youtube.com/results?search_query=ab+shaper+machine" },
+                        { name: "Rueda abdominal", series: "3", reps: "6–10", tempo: "Controlado", descanso: "75s", how: "Rueda hacia adelante sin dejar caer cadera. Regresa usando core.", tips: ["No arquees la espalda baja hacia el suelo", "Faja abdominal de hierro"], video: "https://www.youtube.com/results?search_query=rueda+abdominal+ab+wheel" }
+                    ]
+                },
+                {
+                    name: "JUEVES", emoji: "⚡", focus: "Explosividad + Estabilidad", objetivo: "Potencia de piernas y core anti-rotación", equipamiento: "Tabla equilibrio · Polea · Pesa · Balón",
+                    exercises: [
+                        { name: "Saltos en sentadilla", series: "4", reps: "6", tempo: "Explosivo", descanso: "90s", how: "Baja sentadilla y salta 100% potencia. Aterriza suave.", tips: ["Pocas reps, máxima altura", "Eleva tu patada con salto"], video: "https://www.youtube.com/results?search_query=saltos+sentadilla+potencia" },
+                        { name: "Zancadas explosivas alternas", series: "3", reps: "6 por pierna", tempo: "Explosivo", descanso: "75s", how: "Salta desde zancada cambiando pierna en el aire.", tips: ["Brazos dan impulso", "Torso recto en el aire"], video: "https://www.youtube.com/results?search_query=zancadas+con+salto+explosivas" },
+                        { name: "Balón medicinal Slams", series: "3", reps: "10", tempo: "Explosivo", descanso: "60s", how: "Balón 10kg sobre cabeza, lanza al piso con toda tu fuerza usando cuerpo.", tips: ["Core potente, no solo brazos"], video: "https://www.youtube.com/results?search_query=balón+medicinal+slam" },
+                        { name: "Jalón Pallof (Polea)", series: "3", reps: "12 por lado", tempo: "2-1-2", descanso: "60s", how: "De lado a polea. Empuja brazos rectos al frente, resiste que el cable te gire.", tips: ["Cuerpo estatua", "Frena la inercia de tus propias patadas de giro"], video: "https://www.youtube.com/results?search_query=pallof+press+polea" },
+                        { name: "Equilibrio en tabla (Pistol parcial)", series: "3", reps: "45s por pierna", tempo: "Control", descanso: "60s", how: "Una pierna en tabla de balance. Mantén quieta la tabla.", tips: ["Base para estabilizar tu pierna de apoyo"], video: "https://www.youtube.com/results?search_query=tabla+balance+equilibrio+una+pierna" },
+                        { name: "Máquina de Abdominales (Sprint)", series: "3", reps: "20", tempo: "Rápido", descanso: "60s", how: "Sube y baja rápido sin pausas.", tips: ["Quema metabólica y resistencia de flexores"], video: "https://www.youtube.com/results?search_query=ab+shaper+sprint" }
+                    ]
+                },
+                {
+                    name: "VIERNES", emoji: "🎯", focus: "Taekwondo Específico — Técnica y Cadera", objetivo: "Altura, control de cámara, encadenamientos", equipamiento: "Polea Baja · Tabla · Cojín · Pared", tkdDay: true,
+                    exercises: [
+                        { name: "Elevación rodilla polea baja", series: "4", reps: "10 por pierna", tempo: "2-1-2", descanso: "60s", how: "Tobillera a polea. Jala rodilla al pecho venciendo el peso. Baja lento.", tips: ["Ejercicio REY para sostener pierna en el aire", "No jales con la espalda"], pesoNota: "Poco peso (1.25/2.5kg). Repeticiones estrictas.", video: "https://www.youtube.com/results?search_query=elevación+rodilla+psoas+polea" },
+                        { name: "Equilibrio estático en cojín", series: "3", reps: "45s por pierna", tempo: "Control", descanso: "45s", how: "Un pie en cojín (descalzo). Levanta la otra en cámara. Mantén.", tips: ["Cierra ojos para dificultad x10", "Pivote de roca para patadas"], video: "https://www.youtube.com/results?search_query=equilibrio+bosu+una+pierna" },
+                        { name: "Equilibrio dinámico en tabla", series: "3", reps: "30s por pierna", tempo: "Control", descanso: "60s", how: "Un pie en tabla balance. Haz patadas lentas al aire con la otra.", tips: ["Tobillo de acero para soportar encadenamientos"], video: "https://www.youtube.com/results?search_query=equilibrio+dinamico+tabla+balance" },
+                        { name: "Flexibilidad activa (Frontal Lenta)", series: "3", reps: "8 por pierna", tempo: "4s subida/3s", descanso: "45s", how: "Apoyado pared. Sube pierna frontal recta LENTO. Sostén 3s.", tips: ["Bola del pie armada", "Aumenta altura real sin calentar"], video: "https://www.youtube.com/results?search_query=patada+frontal+lenta+activa" },
+                        { name: "Flexibilidad activa (Lateral Lenta)", series: "3", reps: "8 por pierna", tempo: "4s subida/3s", descanso: "45s", how: "Sube pierna lateral con filo del pie. Lento, rotando cadera.", tips: ["Enfócate en el filo del pie", "Corrige tus problemas de filo"], video: "https://www.youtube.com/results?search_query=patada+lateral+lenta+activa" },
+                        { name: "Encadenamiento lento (x2)", series: "4", reps: "6 combos/pierna", tempo: "Control", descanso: "60s", how: "Dollyo + Yeop lento. Recoge rodilla al pecho (cámara) sin tocar suelo.", tips: ["La rodilla al pecho te permite encadenar"], video: "https://www.youtube.com/results?search_query=encadenamiento+patadas+camara" },
+                        { name: "Activación de pie técnico", series: "2", reps: "15 por posición", tempo: "Conciencia", descanso: "30s", how: "Sentado. Arma: Bola, Filo y Talón. Mantén 2s.", tips: ["Mírate al espejo, técnica pura"], video: "https://www.youtube.com/results?search_query=posición+pie+filo+bola+talón" }
+                    ]
+                }
+            ],
+            estiramiento: [
+                { name: "Tobillo (Anti-tiesura)", duration: "1 min/lado", muscle: "Tobillo/Pies", tkd: "⭐⭐⭐⭐⭐", how: "Punta de pie en pared, lleva rodilla adelante sin levantar talón. Mueve en ángulos.", tkdNote: "Arregla la sensación de pies tiesos y mejora pivote.", video: "https://www.youtube.com/results?search_query=movilidad+tobillo+taekwondo" },
+                { name: "Compresión (Knee to Chest)", duration: "10 reps/lado", muscle: "Psoas/Cadera", tkd: "⭐⭐⭐⭐⭐", how: "Sentado, piernas estiradas. Levanta un pie alto sin inclinarte atrás. Mantén 2s.", tkdNote: "Fortalece el psoas para recoger rodilla en Yeop Chagi.", video: "https://www.youtube.com/results?search_query=compresión+cadera+psoas" },
+                { name: "Rotación 90/90", duration: "1 min/lado", muscle: "Cadera interna", tkd: "⭐⭐⭐⭐⭐", how: "Sentado, rodillas a 90°. Rota rodillas de lado a lado sin despegar talones.", tkdNote: "Suelta la cadera tiesa, patadas más fluidas.", video: "https://www.youtube.com/results?search_query=movilidad+cadera+90/90" },
+                { name: "Mariposa sentada", duration: "45s", muscle: "Aductores/Ingle", tkd: "⭐⭐⭐⭐⭐", how: "Sentado, plantas de pies juntas. Empuja rodillas al suelo.", tkdNote: "Fundamental para patadas laterales y giro.", video: "https://www.youtube.com/results?search_query=estiramiento+mariposa+sentada" },
+                { name: "Flexión adelante sentado", duration: "45s", muscle: "Isquiotibiales", tkd: "⭐⭐⭐⭐⭐", how: "Piernas juntas extendidas. Inclínate desde cadera alcanzando pies.", tkdNote: "Sube más las piernas en patadas frontales.", video: "https://www.youtube.com/results?search_query=flexión+adelante+sentado" },
+                { name: "Zancada profunda estática", duration: "45s/lado", muscle: "Psoas", tkd: "⭐⭐⭐⭐⭐", how: "Zancada baja, rodilla trasera en suelo. Lleva cadera adelante/abajo.", tkdNote: "El psoas tenso limita tu altura de pateo.", video: "https://www.youtube.com/results?search_query=zancada+profunda+estiramiento+psoas" },
+                { name: "Pierna cruzada sentada", duration: "45s/lado", muscle: "Glúteo/Piriforme", tkd: "⭐⭐⭐⭐", how: "Sentado. Cruza tobillo sobre rodilla contraria y jala.", tkdNote: "Mejora rotación externa de cadera para laterales.", video: "https://www.youtube.com/results?search_query=estiramiento+glúteo+pierna+cruzada" },
+                { name: "Patada lateral apoyada", duration: "40s/lado", muscle: "Abductores", tkd: "⭐⭐⭐⭐⭐", how: "Apoyado en pared. Sube pierna lateral y mantén estirando aductor.", tkdNote: "Simula exactamente el Yeop Chagi.", video: "https://www.youtube.com/results?search_query=patada+lateral+estiramiento" },
+                { name: "Esfinge suave", duration: "40s", muscle: "Lumbar/Abdomen", tkd: "⭐⭐⭐", how: "Boca abajo, en antebrazos. Levanta pecho relajando cadera.", tkdNote: "Contrarresta la flexión del entrenamiento.", video: "https://www.youtube.com/results?search_query=estiramiento+esfinge" },
+                { name: "Pecho contra pared", duration: "30s/lado", muscle: "Pecho/Hombro", tkd: "⭐⭐⭐", how: "Brazo extendido en pared, gira el torso para estirar pecho.", tkdNote: "Abre postura tras empuje de lunes.", video: "https://www.youtube.com/results?search_query=estiramiento+pecho+pared" },
+                { name: "Tríceps sobre cabeza", duration: "30s/lado", muscle: "Tríceps", tkd: "⭐⭐", how: "Codo tras la cabeza, jala con otra mano suavemente.", tkdNote: "Recuperación post-brazos.", video: "https://www.youtube.com/results?search_query=estiramiento+triceps" },
+                { name: "Cuello lateral", duration: "30s/lado", muscle: "Trapecios", tkd: "⭐⭐⭐", how: "Inclina oreja al hombro suavemente.", tkdNote: "Reduce tensión de entrenar pesado.", video: "https://www.youtube.com/results?search_query=estiramiento+cuello+lateral" },
+                { name: "Pantorrilla/Tobillo en pared", duration: "30s/lado", muscle: "Gastrocnemio", tkd: "⭐⭐⭐⭐", how: "Punta pie en pared, talón en piso, inclínate.", tkdNote: "Tobillo elástico = pivote seguro.", video: "https://www.youtube.com/results?search_query=estiramiento+pantorrilla+pared" },
+                { name: "Balanceos de pierna", duration: "20 reps", muscle: "Cadera", tkd: "⭐⭐⭐⭐⭐", how: "Balancea piernas frontal y lateral soltando articulación.", tkdNote: "Más altura en encadenamientos rápidos.", video: "https://www.youtube.com/results?search_query=balanceo+piernas+taekwondo" },
+                { name: "Splits progresivos", duration: "60s", muscle: "Aductores", tkd: "⭐⭐⭐⭐⭐", how: "Abre piernas a los lados sin dolor. Mantén y baja progresivo.", tkdNote: "Con meses llegarás. Clave patadas altas.", video: "https://www.youtube.com/results?search_query=splits+progresivos+estiramiento" },
+                { name: "Patadas lentas en espejo", duration: "10 reps", muscle: "Control", tkd: "⭐⭐⭐⭐⭐", how: "Sube lento frente al espejo, corrige técnica visualmente.", tkdNote: "Control neuromuscular brutal para equilibrio.", video: "https://www.youtube.com/results?search_query=patadas+lentas+taekwondo" }
+            ],
+            dieta: {
+                calorias: "~2,900 kcal/día", proteina: "~125g proteína/día",
+                recordatorio: {
+                    base: { cal: "2,500 kcal", prot: "120 g", grasas: "60 g", carbs: "370 g" },
+                    adicion: { cal: "2,900 kcal", prot: "120 g", grasas: "60 g", carbs: "470 g" }
+                },
+                tips: [
+                    "Duerme 8 horas",
+                    "Toma 1 a 2 litros de agua al día"
+                ],
+                dias: [
+                    { comida: "🌅 Desayuno (7:00–8:00am)", prot: "~28g", cal: "~600 kcal", items: ["2 huevos enteros", "1 arepa grande de maíz con una tajada de queso blanco o mozzarella", "35g de frutos secos (almendras, nueces o maní)"] },
+                    { comida: "🍎 Merienda (10:00–11:00am)", prot: "~10g", cal: "~300 kcal", items: ["1 banano o una manzana grande", "Un puñado de semillas de girasol o calabaza (30g)"] },
+                    { comida: "🥣 Almuerzo (12:30–1:30pm)", prot: "~35g", cal: "~700 kcal", items: ["120g de carne de res o pechuga de pollo (pesado ya cocido)", "1 plato hondo de arroz blanco", "2 papas medianas cocidas", "Medio aguacate mediano", "1 cucharada de aceite de oliva crudo sobre el arroz"] },
+                    { comida: "🏃 Pre-entreno (30 min antes de entrenar)", prot: "~2g", cal: "~200 kcal", items: ["1 arepa mediana de maíz", "2 cucharadas soperas de miel de abejas pura o mermelada de fruta"] },
+                    { comida: "⚡ Post-entreno (Inmediatamente al terminar)", isPostWorkout: true, prot: "~25g", cal: "~600 kcal", items: ["1 vaso de leche entera (250ml)", "1 banano", "50g de avena en hojuelas", "2 cucharadas grandes de mantequilla de maní", "Si tienes proteína en polvo, agrega 1 scoop (opcional)"] },
+                    { comida: "🌙 Cena (7:00–8:00pm)", prot: "~25g", cal: "~500 kcal", items: ["100g de pechuga de pollo o carne magra", "1 arepa de maíz o un plato de papas al horno/freidora de aire", "1 cucharadita de mantequilla real sobre las papas o la arepa"] }
+                ]
+            }
+        };
+
+        // CARGAR DB DESDE EL NAVEGADOR O USAR DEFAULT
+        let db = JSON.parse(localStorage.getItem('entrenamiento_db_v2')) || defaultDB;
+
+        function saveDB() {
+            localStorage.setItem('entrenamiento_db_v2', JSON.stringify(db));
+            if (typeof syncToCloud === 'function') syncToCloud();
+        }
+
+        // RENDERIZADOS
+        let modoEdicion = false;
+        
+        function getProgresionDobleHTML() {
+            return `
+                <div class="progresion-box">
+                    <div class="progresion-box-title">🔰 Progresión Doble (Dada tu falta de discos pequeños)</div>
+                    <div class="progresion-box-text">
+                        <strong style="color: #ddd;">Paso 1:</strong> Elige un peso que domines para 8 reps.<br/>
+                        <strong style="color: #ddd;">Paso 2:</strong> Mantén ese peso hasta que logres hacer 12 reps con técnica perfecta.<br/>
+                        <strong style="color: #ddd;">Paso 3:</strong> Solo cuando llegues a 12 reps, sube al siguiente disco disponible y vuelve a bajar a 8 reps.<br/>
+                        <strong style="color: #ddd;">Nota:</strong> Esto evita que te lesiones intentando subir peso cada semana de forma forzada.
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDayHeader(dayObj) {
+            return `
+                <div class="day-header">
+                    <h2>${dayObj.emoji} ${dayObj.name} — ${dayObj.focus}</h2>
+                    <p class="obj">🎯 ${dayObj.objetivo}</p>
+                    ${dayObj.equipamiento ? `<p class="eq">🛠️ ${dayObj.equipamiento}</p>` : ''}
+                    ${dayObj.tkdDay ? `<p style="margin: 6px 0 0; color: var(--theme-accent); font-size: 12px; font-weight: bold;">🥋 Día 100% técnico-específico de taekwondo.</p>` : ''}
+                </div>
+            `;
+        }
+
+        // --- SISTEMA DRAG & DROP ---
+        let dragSrc = null;
+
+        function dragStart(e, tipo, diaIdx, exIdx) {
+            if(!modoEdicion) { e.preventDefault(); return; }
+            dragSrc = { tipo, diaIdx, exIdx };
+            e.dataTransfer.effectAllowed = 'move';
+            e.target.closest('.card').classList.add('dragging');
+        }
+
+        function dragOver(e) {
+            if(!modoEdicion) return;
+            e.preventDefault(); // Necesario para permitir soltar
+            e.dataTransfer.dropEffect = 'move';
+            let card = e.target.closest('.card');
+            if(card) card.classList.add('drag-over');
+        }
+
+        function dragLeave(e) {
+            let card = e.target.closest('.card');
+            if(card) card.classList.remove('drag-over');
+        }
+
+        function dragEnd(e) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging', 'drag-over'));
+        }
+
+        function drop(e, tipo, diaIdx, dropIdx) {
+            e.preventDefault();
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging', 'drag-over'));
+            
+            if(!dragSrc || dragSrc.tipo !== tipo || dragSrc.diaIdx !== diaIdx) return; // Solo mover dentro de la misma lista
+            if(dragSrc.exIdx === dropIdx) return; // Mismo lugar
+            
+            let arr;
+            if(tipo === 'rutina' || tipo === 'calistenia') arr = db[tipo][diaIdx].exercises;
+            else if(tipo === 'estiramiento') arr = db.estiramiento;
+            else if(tipo === 'dieta') arr = db.dieta.dias;
+            
+            // Extraer e insertar en nueva posición
+            let itemMoved = arr.splice(dragSrc.exIdx, 1)[0];
+            arr.splice(dropIdx, 0, itemMoved);
+            
+            saveDB();
+            
+            // Re-renderizar
+            if(tipo === 'rutina') renderRutina(diaIdx);
+            else if(tipo === 'calistenia') renderCalistenia(diaIdx);
+            else if(tipo === 'estiramiento') renderEstiramiento();
+            else if(tipo === 'dieta') renderDieta();
+        }
+
+        function buildCardHtml(ex, index, tipo, diaIdx) {
+            return `
+            <div class="card" draggable="true"
+                 ondragstart="dragStart(event, '${tipo}', ${diaIdx}, ${index})"
+                 ondragover="dragOver(event)"
+                 ondragleave="dragLeave(event)"
+                 ondragend="dragEnd(event)"
+                 ondrop="drop(event, '${tipo}', ${diaIdx}, ${index})">
+                <div class="card-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <div class="card-title-wrap">
+                        <div class="drag-handle" title="Arrastrar para mover">☰</div>
+                        <div>
+                            <div class="card-title" ${tipo === 'estiramiento' ? 'style="color: var(--theme-accent);"' : ''}>${ex.name || ex.comida}</div>
+                            <div class="card-subtitle">
+                                ${tipo === 'dieta' ? `${ex.cal}` : 
+                                 tipo === 'estiramiento' ? `${ex.muscle} · ${ex.duration} · ${ex.tkd}` : 
+                                 `${ex.series} × ${ex.reps} · Desc: ${ex.descanso || '-'}`}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="action-btn edit-btn" title="Editar" onclick="event.stopPropagation(); abrirModalEdit('${tipo}', ${diaIdx}, ${index})">✏️</button>
+                        <button class="action-btn delete-btn" title="Eliminar" onclick="event.stopPropagation(); eliminarItem('${tipo}', ${diaIdx}, ${index})">🗑️</button>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    ${tipo === 'dieta' ? `
+                        ${ex.items.map(item => `<div class="tip-row"><span class="tip-icon">·</span><span>${item}</span></div>`).join('')}
+                    ` : `
+                        <div class="info-box">
+                            <div class="info-box-title">📋 Cómo hacerlo</div>
+                            <div class="info-text">${ex.how}</div>
+                        </div>
+                        ${ex.tkdNote ? `
+                        <div class="info-box" style="background:#0a150a; border: 1px solid #1aff1a;">
+                            <div style="font-size: 11px; color: #1aff1a; margin-bottom: 5px; font-weight: bold;">🥋 Para qué sirve en Taekwondo</div>
+                            <div class="info-text" style="color:#a8e060">${ex.tkdNote}</div>
+                        </div>` : ''}
+                        ${ex.video ? `<a href="${ex.video}" class="btn-youtube" target="_blank" rel="noopener">▶ Ver tutorial en YouTube</a>` : ''}
+                    `}
+                </div>
+            </div>`;
+        }
+
+        function getBalanceGeneralHTML() {
+            let rows = db.balanceGeneral.map(g => `
+                <tr>
+                    <td>${g.grupo}</td>
+                    <td>${g.series}</td>
+                    <td>${g.dias}</td>
+                    <td>${g.estado}</td>
+                </tr>
+            `).join('');
+            return `
+                <details class="caja-desplegable">
+                    <summary>📊 Balance General y Resumen Técnico</summary>
+                    <div class="caja-desplegable-body">
+                        <table class="tabla-comparativa">
+                            <thead><tr><th>Grupo Muscular</th><th>Series/Sem.</th><th>Días</th><th>Estado</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </details>
+            `;
+        }
+
+        function renderRutina(diaIdx = 0) {
+            let dia = db.rutina[diaIdx];
+            let html = `<div class="day-selector">`;
+            db.rutina.forEach((d, i) => { html += `<button class="day-btn ${i === diaIdx ? 'active' : ''}" onclick="renderRutina(${i})">${d.emoji} ${d.name}</button>`; });
+            html += `</div>`;
+            html += renderDayHeader(dia);
+            html += getProgresionDobleHTML();
+            dia.exercises.forEach((ex, i) => { html += buildCardHtml(ex, i, 'rutina', diaIdx); });
+            html += `<button class="btn-add-new" onclick="abrirModalEdit('rutina', ${diaIdx}, null)">➕ Agregar Nuevo Ejercicio</button>`;
+            html += getBalanceGeneralHTML();
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function renderCalistenia(diaIdx = 0) {
+            let dia = db.calistenia[diaIdx];
+            let html = `<div class="day-selector">`;
+            db.calistenia.forEach((d, i) => { html += `<button class="day-btn ${i === diaIdx ? 'active' : ''}" onclick="renderCalistenia(${i})">${d.emoji} ${d.name}</button>`; });
+            html += `</div>`;
+            html += renderDayHeader(dia);
+            html += getProgresionDobleHTML();
+            dia.exercises.forEach((ex, i) => { html += buildCardHtml(ex, i, 'calistenia', diaIdx); });
+            html += `<button class="btn-add-new" onclick="abrirModalEdit('calistenia', ${diaIdx}, null)">➕ Agregar Nuevo Ejercicio</button>`;
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function renderEstiramiento() {
+            let html = `
+                <div class="day-header">
+                    <h2>🧘 Estiramientos y Movilidad</h2>
+                </div>
+            `;
+            db.estiramiento.forEach((s, i) => { html += buildCardHtml(s, i, 'estiramiento', null); });
+            html += `<button class="btn-add-new" onclick="abrirModalEdit('estiramiento', null, null)">➕ Agregar Estiramiento</button>`;
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function getRecordatorioCaloriasHTML() {
+            let r = db.dieta.recordatorio;
+            return `
+                <details class="caja-desplegable">
+                    <summary>📊 Recordatorio: Calorías Base vs. Adición para subir de peso</summary>
+                    <div class="caja-desplegable-body">
+                        <table class="tabla-comparativa">
+                            <thead><tr><th></th><th>Base</th><th>Con Adición</th></tr></thead>
+                            <tbody>
+                                <tr><td>🔥 Calorías</td><td>${r.base.cal}</td><td>${r.adicion.cal}</td></tr>
+                                <tr><td>🍗 Proteínas</td><td>${r.base.prot}</td><td>${r.adicion.prot}</td></tr>
+                                <tr><td>🥑 Grasas</td><td>${r.base.grasas}</td><td>${r.adicion.grasas}</td></tr>
+                                <tr><td>🍚 Carbohidratos</td><td>${r.base.carbs}</td><td>${r.adicion.carbs}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            `;
+        }
+
+        function renderDieta() {
+            let html = getRecordatorioCaloriasHTML();
+            html += `
+                <div class="dieta-header-box">
+                    <h2>🍽️ Plan de Alimentación</h2>
+                    <div class="dieta-stats">
+                        <div class="dieta-stat-item">🔥 ${db.dieta.calorias}</div>
+                        <div class="dieta-stat-item">🍗 ${db.dieta.proteina}</div>
+                        <button class="action-btn edit-btn" title="Editar Metas" style="padding: 8px 12px;" onclick="abrirModalEdit('dietaStats')">✏️</button>
+                    </div>
+                </div>
+            `;
+            db.dieta.dias.forEach((d, i) => { html += buildCardHtml(d, i, 'dieta', null); });
+            html += `<button class="btn-add-new" onclick="abrirModalEdit('dieta', null, null)">➕ Agregar Comida</button>`;
+            
+            html += `
+            <div style="background: #0f1218; border: 1px solid var(--theme-border); border-radius: 8px; padding: 14px; margin-top: 20px;">
+                <div style="fontWeight: 700; color: var(--theme-accent); font-size: 13px; margin-bottom: 10px; font-weight: bold;">💡 Tips de dieta</div>
+                ${db.dieta.tips.map(tip => `
+                    <div style="display: flex; gap: 8px; margin-bottom: 6px; font-size: 12px; color: var(--theme-text-light); line-height: 1.5;">
+                        <span style="color: var(--theme-accent); flex-shrink: 0;">✓</span><span>${tip}</span>
+                    </div>
+                `).join('')}
+            </div>`;
+            document.getElementById('content').innerHTML = html;
+        }
+
+        // (Respaldos eliminados: ahora solo existe el botón de descarga de app completa en el banner)
+
+        function descargarHTML() {
+            // Elimina clases temporales para la descarga limpia
+            document.body.classList.remove('modo-edicion');
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('expanded'));
+            
+            let htmlContent = "<!DOCTYPE html>\n<html lang=\"es\">\n" + document.documentElement.innerHTML + "\n</html>";
+            const dataStr = "data:text/html;charset=utf-8," + encodeURIComponent(htmlContent);
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "Plan_Entrenamiento.html");
+            dlAnchorElem.click();
+            
+            if(modoEdicion) document.body.classList.add('modo-edicion');
+        }
+
+        // TABS Y TEMAS
+        let currentTab = 'rutina';
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.body.className = 'theme-' + tabId; // Cambia los colores globalmente
+
+            if(tabId === 'rutina') renderRutina();
+            else if(tabId === 'calistenia') renderCalistenia();
+            else if(tabId === 'estiramiento') renderEstiramiento();
+            else if(tabId === 'dieta') renderDieta();
+        }
+
+        // ELIMINAR ITEM (Con confirmación)
+        function eliminarItem(tipo, diaIdx, exIdx) {
+            if(!confirm("¿Estás seguro de que quieres eliminar este elemento de forma permanente?")) return;
+            
+            if(tipo === 'rutina') { db.rutina[diaIdx].exercises.splice(exIdx, 1); renderRutina(diaIdx); } 
+            else if (tipo === 'calistenia') { db.calistenia[diaIdx].exercises.splice(exIdx, 1); renderCalistenia(diaIdx); } 
+            else if (tipo === 'estiramiento') { db.estiramiento.splice(exIdx, 1); renderEstiramiento(); } 
+            else if (tipo === 'dieta') { db.dieta.dias.splice(exIdx, 1); renderDieta(); }
+            
+            saveDB();
+        }
+
+        // MODO EDICIÓN TOGLE
+        function toggleEditMode() {
+            modoEdicion = !modoEdicion;
+            if(modoEdicion) document.body.classList.add('modo-edicion');
+            else document.body.classList.remove('modo-edicion');
+        }
+
+        // ABRIR MODAL DE EDICIÓN O CREACIÓN
+        let refEdit = {};
+        function abrirModalEdit(tipo, diaIdx = null, exIdx = null) {
+            let m = document.getElementById('editModal');
+            let form = document.getElementById('modal-fields');
+            let isNew = (exIdx === null);
+            let tituloModal = isNew ? "Agregar Nuevo" : "Editar Elemento";
+            
+            if(tipo === 'rutina' || tipo === 'calistenia') {
+                let ex = isNew ? { name:"", series:"", reps:"", tempo:"", descanso:"", how:"", video:"" } : db[tipo][diaIdx].exercises[exIdx];
+                refEdit = { tipo, diaIdx, exIdx, ref: ex };
+                form.innerHTML = `
+                    <h3 style="color:var(--theme-accent); margin-bottom:15px; font-weight:bold;">${tituloModal}</h3>
+                    <label>Nombre del Ejercicio</label>
+                    <input type="text" id="m-name" value="${ex.name}">
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1;"><label>Series</label><input type="text" id="m-series" value="${ex.series}"></div>
+                        <div style="flex:1;"><label>Repeticiones</label><input type="text" id="m-reps" value="${ex.reps}"></div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1;"><label>Tempo (Ej: 2-1-1)</label><input type="text" id="m-tempo" value="${ex.tempo || ''}"></div>
+                        <div style="flex:1;"><label>Descanso (Ej: 90s)</label><input type="text" id="m-descanso" value="${ex.descanso || ''}"></div>
+                    </div>
+                    <label>Cómo hacerlo</label>
+                    <textarea id="m-how" rows="4">${ex.how}</textarea>
+                    <label>Link de YouTube</label>
+                    <input type="text" id="m-video" value="${ex.video || ''}" placeholder="https://youtube.com/...">
+                    <button onclick="guardarEdicion()">Guardar</button>
+                    <button class="close-modal" onclick="document.getElementById('editModal').style.display='none'">Cancelar</button>
+                `;
+            } else if (tipo === 'estiramiento') {
+                let ex = isNew ? { name:"", how:"", video:"", muscle:"", duration:"", tkd:"" } : db.estiramiento[exIdx];
+                refEdit = { tipo, exIdx, ref: ex };
+                form.innerHTML = `
+                    <h3 style="color:var(--theme-accent); margin-bottom:15px; font-weight:bold;">${tituloModal}</h3>
+                    <label>Nombre</label>
+                    <input type="text" id="m-name" value="${ex.name}">
+                    <label>Duración / Segundos</label>
+                    <input type="text" id="m-duration" value="${ex.duration || ''}">
+                    <label>Cómo hacerlo</label>
+                    <textarea id="m-how" rows="4">${ex.how}</textarea>
+                    <label>Link de YouTube</label>
+                    <input type="text" id="m-video" value="${ex.video || ''}" placeholder="https://youtube.com/...">
+                    <button onclick="guardarEdicion()">Guardar</button>
+                    <button class="close-modal" onclick="document.getElementById('editModal').style.display='none'">Cancelar</button>
+                `;
+            } else if (tipo === 'dietaStats') {
+                refEdit = { tipo };
+                form.innerHTML = `
+                    <h3 style="color:var(--theme-accent); margin-bottom:15px; font-weight:bold;">Editar Metas</h3>
+                    <label>Calorías Diarias</label>
+                    <input type="text" id="m-cal" value="${db.dieta.calorias}">
+                    <label>Proteína Diaria</label>
+                    <input type="text" id="m-prot" value="${db.dieta.proteina}">
+                    <button onclick="guardarEdicion()">Guardar</button>
+                    <button class="close-modal" onclick="document.getElementById('editModal').style.display='none'">Cancelar</button>
+                `;
+            } else if (tipo === 'dieta') {
+                let ex = isNew ? { comida:"", cal:"", prot:"", items:[] } : db.dieta.dias[exIdx];
+                refEdit = { tipo, exIdx, ref: ex };
+                form.innerHTML = `
+                    <h3 style="color:var(--theme-accent); margin-bottom:15px; font-weight:bold;">${tituloModal}</h3>
+                    <label>Nombre de la Comida (Ej: Almuerzo)</label>
+                    <input type="text" id="m-name" value="${ex.comida}">
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1;"><label>Calorías (Ej: ~600 kcal)</label><input type="text" id="m-cal" value="${ex.cal || ''}"></div>
+                        <div style="flex:1;"><label>Proteína (Ej: ~30g)</label><input type="text" id="m-prot" value="${ex.prot || ''}"></div>
+                    </div>
+                    <label>Alimentos (Separados por punto y coma ";")</label>
+                    <textarea id="m-items" rows="4" placeholder="150g pollo; 1 taza arroz; ensalada">${ex.items.join('; ')}</textarea>
+                    <button onclick="guardarEdicion()">Guardar</button>
+                    <button class="close-modal" onclick="document.getElementById('editModal').style.display='none'">Cancelar</button>
+                `;
+            }
+            m.style.display = 'flex';
+        }
+
+        // GUARDAR CAMBIOS DE EDICIÓN O CREACIÓN
+        function guardarEdicion() {
+            let isNew = (refEdit.exIdx === null);
+            
+            if(refEdit.tipo === 'rutina' || refEdit.tipo === 'calistenia') {
+                refEdit.ref.name = document.getElementById('m-name').value;
+                refEdit.ref.series = document.getElementById('m-series').value;
+                refEdit.ref.reps = document.getElementById('m-reps').value;
+                refEdit.ref.tempo = document.getElementById('m-tempo').value;
+                refEdit.ref.descanso = document.getElementById('m-descanso').value;
+                refEdit.ref.how = document.getElementById('m-how').value;
+                refEdit.ref.video = document.getElementById('m-video').value;
+                
+                if (isNew) { refEdit.ref.tips = []; db[refEdit.tipo][refEdit.diaIdx].exercises.push(refEdit.ref); }
+                
+                if(refEdit.tipo === 'rutina') renderRutina(refEdit.diaIdx);
+                else renderCalistenia(refEdit.diaIdx);
+                
+            } else if(refEdit.tipo === 'estiramiento') {
+                refEdit.ref.name = document.getElementById('m-name').value;
+                refEdit.ref.duration = document.getElementById('m-duration').value;
+                refEdit.ref.how = document.getElementById('m-how').value;
+                refEdit.ref.video = document.getElementById('m-video').value;
+                
+                if (isNew) db.estiramiento.push(refEdit.ref);
+                renderEstiramiento();
+                
+            } else if(refEdit.tipo === 'dietaStats') {
+                db.dieta.calorias = document.getElementById('m-cal').value;
+                db.dieta.proteina = document.getElementById('m-prot').value;
+                renderDieta();
+                
+            } else if(refEdit.tipo === 'dieta') {
+                refEdit.ref.comida = document.getElementById('m-name').value;
+                refEdit.ref.cal = document.getElementById('m-cal').value;
+                refEdit.ref.prot = document.getElementById('m-prot').value;
+                let rawItems = document.getElementById('m-items').value.split(';');
+                refEdit.ref.items = rawItems.map(i => i.trim()).filter(i => i.length > 0);
+                
+                if (isNew) { db.dieta.dias.push(refEdit.ref); }
+                renderDieta();
+            }
+            
+            saveDB();
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // INICIO
+        renderRutina();
+
+    </script>
+
+    <!-- FIREBASE: SINCRONIZACIÓN EN TIEMPO REAL -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNbh95zpiDrXlqqdD4z6KJJbr2Acq8sAk",
+            authDomain: "plan-entrenamiento-dab9a.firebaseapp.com",
+            databaseURL: "https://plan-entrenamiento-dab9a-default-rtdb.firebaseio.com",
+            projectId: "plan-entrenamiento-dab9a",
+            storageBucket: "plan-entrenamiento-dab9a.firebasestorage.app",
+            messagingSenderId: "453232104670",
+            appId: "1:453232104670:web:d172df1e745453d4795e4f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const cloudRef = firebase.database().ref('entrenamiento');
+        let syncingFromCloud = false;
+
+        // Sube los datos actuales a la nube (llamado desde saveDB)
+        function syncToCloud() {
+            if (syncingFromCloud) return; // evita bucles al recibir cambios remotos
+            cloudRef.set(db).catch(err => console.error("Error al sincronizar con Firebase:", err));
+        }
+
+        // Escucha cambios en tiempo real desde otros dispositivos
+        cloudRef.on('value', (snapshot) => {
+            const remoteData = snapshot.val();
+
+            if (!remoteData) {
+                // Todavía no hay nada en la nube: sube lo que tengas guardado localmente
+                cloudRef.set(db);
+                return;
+            }
+
+            if (JSON.stringify(remoteData) === JSON.stringify(db)) return; // sin cambios reales
+
+            syncingFromCloud = true;
+            db = remoteData;
+            localStorage.setItem('entrenamiento_db_v2', JSON.stringify(db));
+
+            if (currentTab === 'rutina') renderRutina();
+            else if (currentTab === 'calistenia') renderCalistenia();
+            else if (currentTab === 'estiramiento') renderEstiramiento();
+            else if (currentTab === 'dieta') renderDieta();
+
+            syncingFromCloud = false;
+        });
+    </script>
+
+    <!-- SERVICE WORKER: PERMITE USAR LA APP OFFLINE E INSTALARLA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.error('Error registrando SW:', err));
+            });
+        }
+    </script>
+
+</body>
+</html>
