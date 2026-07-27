@@ -282,6 +282,7 @@
     <script>
         // BASE DE DATOS INTACTA
         const defaultDB = {
+            version: 2,
             rutina: [
                 {
                     name: "LUNES", emoji: "💪", focus: "Torso A (Enfoque Empuje / Tirón)", objetivo: "Duración estimada: 70–75 min",
@@ -457,6 +458,12 @@
 
         // CARGAR DB DESDE EL NAVEGADOR O USAR DEFAULT
         let db = JSON.parse(localStorage.getItem('entrenamiento_db_v2')) || defaultDB;
+
+        // Si el plan guardado localmente es de una versión más vieja, se actualiza con el nuevo plan del código
+        if (!db.version || db.version < defaultDB.version) {
+            db = defaultDB;
+            localStorage.setItem('entrenamiento_db_v2', JSON.stringify(db));
+        }
 
         // Asegura que todo ejercicio de Rutina/Calistenia tenga un campo "pr" (récord personal)
         [...db.rutina, ...db.calistenia].forEach(dia => {
@@ -929,8 +936,8 @@
         cloudRef.on('value', (snapshot) => {
             const remoteData = snapshot.val();
 
-            if (!remoteData) {
-                // Todavía no hay nada en la nube: sube lo que tengas guardado localmente
+            if (!remoteData || !remoteData.version || remoteData.version < defaultDB.version) {
+                // La nube no tiene nada o tiene una versión vieja: sube la versión actual
                 cloudRef.set(db);
                 return;
             }
