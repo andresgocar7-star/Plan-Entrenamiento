@@ -140,6 +140,24 @@
         .card-title { font-weight: bold; font-size: 14px; color: #fff; transition: color 0.2s; }
         .card.expanded .card-title { color: var(--theme-accent); }
         .card-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+        .pr-badge {
+            margin-top: 6px; display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(255, 200, 0, 0.08); border: 1px solid #6b5a00; color: #ffcf40;
+            font-size: 10.5px; font-weight: bold; padding: 4px 9px; border-radius: 20px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .pr-badge:hover { background: rgba(255, 200, 0, 0.18); border-color: #ffcf40; }
+        .pr-modal-content {
+            background: #11151c; border: 1px solid #ffcf40; border-radius: 10px; padding: 20px;
+            width: 90%; max-width: 320px; text-align: center;
+        }
+        .pr-modal-content h3 { color: #ffcf40; margin-bottom: 4px; }
+        .pr-modal-content p { color: var(--text-muted); font-size: 12px; margin-bottom: 14px; }
+        .pr-modal-content input {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #0a0c10;
+            color: #fff; font-size: 15px; text-align: center; margin-bottom: 14px;
+        }
         
         .card-actions { display: flex; gap: 8px; align-items: center; }
         .action-btn { display: none; padding: 6px 8px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; transition: 0.2s; }
@@ -251,6 +269,16 @@
         <div class="modal-content" id="modal-fields"></div>
     </div>
 
+    <div id="prModal" class="modal">
+        <div class="pr-modal-content">
+            <h3>🏆 Récord Personal</h3>
+            <p>¿Cuál es el peso máximo que has cargado en este ejercicio?</p>
+            <input type="text" id="pr-input" placeholder="Ej: 17.5kg" autocomplete="off">
+            <button onclick="guardarPR()">Guardar</button>
+            <button class="close-modal" onclick="document.getElementById('prModal').style.display='none'">Cancelar</button>
+        </div>
+    </div>
+
     <script>
         // BASE DE DATOS INTACTA
         const defaultDB = {
@@ -329,58 +357,62 @@
             ],
             calistenia: [
                 {
-                    name: "LUNES", emoji: "🔥", focus: "Empuje — Pecho, Hombros, Tríceps", objetivo: "Fuerza de empuje con peso corporal + carga libre", equipamiento: "Barras paralelas · Anillos · Barra + discos · Balón",
+                    name: "LUNES", emoji: "🔥", focus: "Torso A (Calistenia Pesada + Empuje / Tirón)", objetivo: "Duración estimada: 70–75 min",
                     exercises: [
-                        { name: "Fondos en barras paralelas", series: "4", reps: "6–10", tempo: "2-1-1", descanso: "90s", how: "Agarra las barras. Baja doblando los codos hasta que los hombros queden al nivel de las manos (~90°). Empuja de vuelta. Inclínate hacia adelante para pecho.", tips: ["Controla el descenso", "Codos apuntando hacia atrás"], pesoNota: "Añade costal de 20kg cuando domines 10 reps limpias.", video: "https://www.youtube.com/results?search_query=fondos+barras+paralelas+técnica" },
-                        { name: "Press de pecho en anillos", series: "3", reps: "8–10", tempo: "2-1-1", descanso: "75s", how: "Cuelga los anillos a altura del pecho. Agárralos inclinando el cuerpo hacia adelante. Baja el pecho entre los anillos doblando codos, empuja.", tips: ["Gira muñecas hacia afuera al extender", "A menor altura, mayor dificultad"], video: "https://www.youtube.com/results?search_query=press+pecho+anillos+gimnásticos" },
-                        { name: "Press militar con barra", series: "3", reps: "8–10 ⚡", tempo: "2-1-1", descanso: "90s", how: "De pie, barra al frente en hombros. Empuja hacia arriba hasta extender los brazos. Baja controlado.", tips: ["No arquees la espalda baja al subir", "Construye hombros sólidos para bloqueos"], pesoNota: "Empieza con la barra sola, luego suma discos pequeños.", video: "https://www.youtube.com/results?search_query=press+militar+barra+de+pie" },
-                        { name: "Elevaciones laterales con discos", series: "3", reps: "12–15", tempo: "2-1-2", descanso: "60s", how: "De pie, disco en cada mano. Sube brazos lateralmente en cruz. Baja lento.", tips: ["Codo más alto que la muñeca", "Técnica estricta vale más que peso"], video: "https://www.youtube.com/results?search_query=elevaciones+laterales+hombros" },
-                        { name: "Extensión de tríceps en polea alta", series: "3", reps: "12–15", tempo: "2-1-1", descanso: "60s", how: "Frente a polea alta. Codos pegados a los costados. Extiende brazos abajo, sube controlado.", tips: ["Codos como bisagra, sin desplazarse"], video: "https://www.youtube.com/results?search_query=extensión+tríceps+polea+alta" },
-                        { name: "Lanzamiento balón contra pared", series: "3", reps: "10", tempo: "Explosivo", descanso: "60s", how: "Sujeta balón de 10kg en el pecho. Lánzalo con fuerza contra la pared y atrápalo.", tips: ["Potencia pura", "Transfiere a explosividad en combate"], video: "https://www.youtube.com/results?search_query=lanzamiento+balón+medicinal+pared" }
+                        { name: "Fondos en barras paralelas", series: "3", reps: "6–10", descanso: "90s", how: "Agarra las barras. Baja doblando los codos hasta que los hombros queden al nivel de las manos (~90°). Empuja de vuelta. Inclínate hacia adelante para pecho.", tips: [], pesoNota: "", video: "https://www.youtube.com/results?search_query=fondos+barras+paralelas+técnica" },
+                        { name: "Dominadas en barra", series: "3", reps: "6–8", descanso: "90s", how: "Agarre prono. Jálate hasta pasar el mentón. Baja lento 2 seg.", tips: [], video: "https://www.youtube.com/results?search_query=dominadas+técnica+completa" },
+                        { name: "Press de pecho en anillos", series: "3", reps: "8–10", descanso: "75s", how: "Cuelga los anillos a altura del pecho. Agárralos inclinando el cuerpo hacia adelante. Baja el pecho entre los anillos doblando codos, empuja.", tips: [], video: "https://www.youtube.com/results?search_query=press+pecho+anillos+gimnásticos" },
+                        { name: "Remo en anillos", series: "3", reps: "10–12", descanso: "75s", how: "Cuelga anillos a la cintura. Extiende cuerpo, talones al suelo. Jala pecho hacia anillos.", tips: [], video: "https://www.youtube.com/results?search_query=remo+anillos+gimnásticos" },
+                        { name: "Press militar con barra", series: "3", reps: "8–10", descanso: "90s", how: "De pie, barra al frente en hombros. Empuja hacia arriba hasta extender los brazos. Baja controlado.", tips: [], video: "https://www.youtube.com/results?search_query=press+militar+barra+de+pie" },
+                        { name: "Extensión de tríceps en polea (fija)", series: "3", reps: "10–12", descanso: "60s", how: "Frente a polea alta. Codos pegados a los costados. Extiende brazos abajo, sube controlado.", tips: [], video: "https://www.youtube.com/results?search_query=extensión+tríceps+polea+alta" },
+                        { name: "Curl de bíceps con barra", series: "3", reps: "10–12", descanso: "60s", how: "Agarre supino. Codos pegados a costillas. Sube barra y baja controlando.", tips: [], video: "https://www.youtube.com/results?search_query=curl+biceps+barra" }
                     ]
                 },
                 {
-                    name: "MARTES", emoji: "🦵", focus: "Tren Inferior + Fuerza Base", objetivo: "Construir masa en piernas y cadena posterior", equipamiento: "Pesa rusa · Costal 20kg · Barra",
+                    name: "MARTES", emoji: "🦵", focus: "Pierna A (Fuerza Base + Cuádriceps / Cadera)", objetivo: "Duración estimada: 70–75 min",
                     exercises: [
-                        { name: "Sentadilla con costal", series: "4", reps: "8–10 ⚡", tempo: "3-1-1", descanso: "90s", how: "Carga el costal (20kg) al pecho. Baja en sentadilla profunda y erguida. Sube empujando desde talones.", tips: ["Activa el core muchísimo", "Rodillas en dirección a los pies"], pesoNota: "Si 20kg es mucho, usa la pesa rusa de 10kg modo goblet.", video: "https://www.youtube.com/results?search_query=sentadilla+sandbag+costal" },
-                        { name: "Peso muerto rumano con costal/barra", series: "3", reps: "8–10", tempo: "3-1-1", descanso: "90s", how: "Inclina el torso adelante con espalda recta. Siente estirón en isquiotibiales y sube.", tips: ["Empuja cadera hacia atrás", "Clave para frenar patadas"], video: "https://www.youtube.com/results?search_query=peso+muerto+rumano" },
-                        { name: "Zancadas caminando con carga", series: "3", reps: "10 por pierna", tempo: "2-1-1", descanso: "75s", how: "Paso largo adelante, baja cadera. Torso recto. Avanza.", tips: ["No dejes que rodilla delantera colapse", "Costal o pesa rusa en mano"], video: "https://www.youtube.com/results?search_query=zancada+caminando+walking+lunge" },
-                        { name: "Swing de pesa rusa (10kg)", series: "4", reps: "12", tempo: "Explosivo", descanso: "90s", how: "Bisagra de cadera. Empuja caderas explosivamente para subir la pesa. Brazos solo son cuerdas.", tips: ["Simula el empuje de cadera de patadas circulares"], video: "https://www.youtube.com/results?search_query=swing+pesa+rusa+kettlebell" },
-                        { name: "Elevación de pantorrillas en escalón", series: "3", reps: "15", tempo: "2-1-2", descanso: "60s", how: "Puntas en escalón, baja talones. Sube completo, mantén, baja.", tips: ["Rango de movimiento completo genera masa"], video: "https://www.youtube.com/results?search_query=elevación+pantorrillas+escalón" }
+                        { name: "Activación de potencia (Saltos al cajón / verticales)", series: "3", reps: "3", descanso: "90s", how: "", tips: [], video: "" },
+                        { name: "Sentadilla con barra / costal (20 kg)", series: "4", reps: "8–10", descanso: "90s", how: "Carga el costal (20kg) al pecho. Baja en sentadilla profunda y erguida. Sube empujando desde talones.", tips: [], pesoNota: "", video: "https://www.youtube.com/results?search_query=sentadilla+sandbag+costal" },
+                        { name: "Peso muerto rumano con barra", series: "3", reps: "8–10", descanso: "90s", how: "Inclina el torso adelante con espalda recta. Siente estirón en isquiotibiales y sube.", tips: [], video: "https://www.youtube.com/results?search_query=peso+muerto+rumano" },
+                        { name: "Zancadas caminando con carga (pesa rusa / costal)", series: "3", reps: "10 por pierna", descanso: "75s", how: "Paso largo adelante, baja cadera. Torso recto. Avanza.", tips: [], video: "https://www.youtube.com/results?search_query=zancada+caminando+walking+lunge" },
+                        { name: "Swing de pesa rusa (10 kg)", series: "3", reps: "12", descanso: "75s", how: "Bisagra de cadera. Empuja caderas explosivamente para subir la pesa. Brazos solo son cuerdas.", tips: [], video: "https://www.youtube.com/results?search_query=swing+pesa+rusa+kettlebell" },
+                        { name: "Elevación de pantorrillas en escalón", series: "4", reps: "12–15", descanso: "60s", how: "Puntas en escalón, baja talones. Sube completo, mantén, baja.", tips: [], video: "https://www.youtube.com/results?search_query=elevación+pantorrillas+escalón" },
+                        { name: "Rueda abdominal", series: "3", reps: "8–10", descanso: "60s", how: "Rueda hacia adelante sin dejar caer cadera. Regresa usando core.", tips: [], video: "https://www.youtube.com/results?search_query=rueda+abdominal+ab+wheel" }
                     ]
                 },
                 {
-                    name: "MIÉRCOLES", emoji: "🏗️", focus: "Jalón + Core Funcional", objetivo: "Tracción de espalda y compresión abdominal", equipamiento: "Barra dominadas · Anillos · Máquina Abdominal · Rueda",
+                    name: "MIÉRCOLES", emoji: "🥋", focus: "Potencia Específica + Taekwondo & Movilidad", objetivo: "Duración estimada: 65–75 min", tkdDay: true,
                     exercises: [
-                        { name: "Dominada en barra", series: "4", reps: "5–8 ⚡", tempo: "2-1-2", descanso: "90s", how: "Agarre prono. Jálate hasta pasar el mentón. Baja lento 2 seg.", tips: ["Mete omóplatos hacia abajo primero", "Constructor de espalda top"], pesoNota: "Al pasar 10 reps, cuélgate la pesa rusa de 10kg.", video: "https://www.youtube.com/results?search_query=dominadas+técnica+completa" },
-                        { name: "Remo en anillos", series: "3", reps: "10–12", tempo: "2-1-2", descanso: "75s", how: "Cuelga anillos a la cintura. Extiende cuerpo, talones al suelo. Jala pecho hacia anillos.", tips: ["Cuerpo más horizontal = más peso", "Pecho hacia afuera"], video: "https://www.youtube.com/results?search_query=remo+anillos+gimnásticos" },
-                        { name: "Remo con barra (Pendlay)", series: "3", reps: "8", tempo: "2-1-1", descanso: "90s", how: "Barra en el suelo. Torso paralelo al piso. Jala barra directo al abdomen y baja al piso en cada rep.", tips: ["Aisla los dorsales sin levantar el torso"], video: "https://www.youtube.com/results?search_query=remo+pendlay+barra" },
-                        { name: "Curl de bíceps con barra", series: "3", reps: "12", tempo: "2-1-2", descanso: "60s", how: "Agarre supino. Codos pegados a costillas. Sube barra y baja controlando.", tips: ["No te balancees con la espalda"], video: "https://www.youtube.com/results?search_query=curl+biceps+barra" },
-                        { name: "Máquina de Abdominales (Lento)", series: "3", reps: "12–15", tempo: "1-1-3", descanso: "60s", how: "Apoya rodillas. Sube explosivo, pausa, baja MUY lento resistiendo (3 seg).", tips: ["El trabajo está en la bajada", "Fortalece el psoas para la cámara de pateo"], tkdNote: "Tu mejor aliado en casa para fuerza de cadera.", video: "https://www.youtube.com/results?search_query=ab+shaper+machine" },
-                        { name: "Rueda abdominal", series: "3", reps: "6–10", tempo: "Controlado", descanso: "75s", how: "Rueda hacia adelante sin dejar caer cadera. Regresa usando core.", tips: ["No arquees la espalda baja hacia el suelo", "Faja abdominal de hierro"], video: "https://www.youtube.com/results?search_query=rueda+abdominal+ab+wheel" }
+                        { name: "Depth Jumps (Saltos reactivos desde superficie baja)", series: "3", reps: "4", descanso: "120s", how: "", tips: [], video: "" },
+                        { name: "Zancadas explosivas alternas / Bounding", series: "3", reps: "4 por pierna", descanso: "120s", how: "", tips: [], video: "" },
+                        { name: "Balón medicinal Slams", series: "3", reps: "8–10", descanso: "90s", how: "Balón 10kg sobre cabeza, lanza al piso con toda tu fuerza usando cuerpo.", tips: [], video: "https://www.youtube.com/results?search_query=balón+medicinal+slam" },
+                        { name: "Elevación rodilla con resistencia (polea baja o banda)", series: "3", reps: "10 por pierna", descanso: "60s", how: "Tobillera a polea. Jala rodilla al pecho venciendo el peso. Baja lento.", tips: [], pesoNota: "", video: "https://www.youtube.com/results?search_query=elevación+rodilla+psoas+polea" },
+                        { name: "Flexibilidad activa (patada lenta frontal)", series: "3", reps: "8 por pierna", descanso: "45s", how: "Apoyado pared. Sube pierna frontal recta LENTO. Sostén 3s.", tips: [], video: "https://www.youtube.com/results?search_query=patada+frontal+lenta+activa" },
+                        { name: "Flexibilidad activa (patada lenta lateral)", series: "3", reps: "8 por pierna", descanso: "45s", how: "Sube pierna lateral con filo del pie. Lento, rotando cadera.", tips: [], video: "https://www.youtube.com/results?search_query=patada+lateral+lenta+activa" },
+                        { name: "Equilibrio dinámico en tabla / cojín", series: "3", reps: "30s por pierna", descanso: "45s", how: "", tips: [], video: "" },
+                        { name: "Encadenamientos técnicos (combos x2 patadas)", series: "4", reps: "6 combos por pierna", descanso: "60s", how: "Dollyo + Yeop lento. Recoge rodilla al pecho (cámara) sin tocar suelo.", tips: [], video: "https://www.youtube.com/results?search_query=encadenamiento+patadas+camara" }
                     ]
                 },
                 {
-                    name: "JUEVES", emoji: "⚡", focus: "Explosividad + Estabilidad", objetivo: "Potencia de piernas y core anti-rotación", equipamiento: "Tabla equilibrio · Polea · Pesa · Balón",
+                    name: "JUEVES", emoji: "🔗", focus: "Torso B (Enfoque Anillos + Volumen / Estabilidad)", objetivo: "Duración estimada: 70–75 min",
                     exercises: [
-                        { name: "Saltos en sentadilla", series: "4", reps: "6", tempo: "Explosivo", descanso: "90s", how: "Baja sentadilla y salta 100% potencia. Aterriza suave.", tips: ["Pocas reps, máxima altura", "Eleva tu patada con salto"], video: "https://www.youtube.com/results?search_query=saltos+sentadilla+potencia" },
-                        { name: "Zancadas explosivas alternas", series: "3", reps: "6 por pierna", tempo: "Explosivo", descanso: "75s", how: "Salta desde zancada cambiando pierna en el aire.", tips: ["Brazos dan impulso", "Torso recto en el aire"], video: "https://www.youtube.com/results?search_query=zancadas+con+salto+explosivas" },
-                        { name: "Balón medicinal Slams", series: "3", reps: "10", tempo: "Explosivo", descanso: "60s", how: "Balón 10kg sobre cabeza, lanza al piso con toda tu fuerza usando cuerpo.", tips: ["Core potente, no solo brazos"], video: "https://www.youtube.com/results?search_query=balón+medicinal+slam" },
-                        { name: "Jalón Pallof (Polea)", series: "3", reps: "12 por lado", tempo: "2-1-2", descanso: "60s", how: "De lado a polea. Empuja brazos rectos al frente, resiste que el cable te gire.", tips: ["Cuerpo estatua", "Frena la inercia de tus propias patadas de giro"], video: "https://www.youtube.com/results?search_query=pallof+press+polea" },
-                        { name: "Equilibrio en tabla (Pistol parcial)", series: "3", reps: "45s por pierna", tempo: "Control", descanso: "60s", how: "Una pierna en tabla de balance. Mantén quieta la tabla.", tips: ["Base para estabilizar tu pierna de apoyo"], video: "https://www.youtube.com/results?search_query=tabla+balance+equilibrio+una+pierna" },
-                        { name: "Máquina de Abdominales (Sprint)", series: "3", reps: "20", tempo: "Rápido", descanso: "60s", how: "Sube y baja rápido sin pausas.", tips: ["Quema metabólica y resistencia de flexores"], video: "https://www.youtube.com/results?search_query=ab+shaper+sprint" }
+                        { name: "Flexiones en anillos (o declinadas)", series: "3", reps: "8–12", descanso: "75s", how: "", tips: [], video: "" },
+                        { name: "Remo Pendlay / Remo con barra", series: "3", reps: "8–10", descanso: "90s", how: "Barra en el suelo. Torso paralelo al piso. Jala barra directo al abdomen y baja al piso en cada rep.", tips: [], video: "https://www.youtube.com/results?search_query=remo+pendlay+barra" },
+                        { name: "Elevaciones laterales con discos", series: "3", reps: "12–15", descanso: "60s", how: "De pie, disco en cada mano. Sube brazos lateralmente en cruz. Baja lento.", tips: [], video: "https://www.youtube.com/results?search_query=elevaciones+laterales+hombros" },
+                        { name: "Facepulls en polea (o Pájaros con disco)", series: "3", reps: "12–15", descanso: "60s", how: "", tips: [], video: "" },
+                        { name: "Biserie: Extensiones de tríceps (anillos/polea) + Curl de bíceps (anillos o barra)", series: "3", reps: "10-12 + 10-12", descanso: "60s entre biserie", how: "", tips: [], video: "" },
+                        { name: "Máquina de abdominales (Lento / Controlado)", series: "3", reps: "12–15", descanso: "60s", how: "Apoya rodillas. Sube explosivo, pausa, baja MUY lento resistiendo (3 seg).", tips: [], tkdNote: "Tu mejor aliado en casa para fuerza de cadera.", video: "https://www.youtube.com/results?search_query=ab+shaper+machine" }
                     ]
                 },
                 {
-                    name: "VIERNES", emoji: "🎯", focus: "Taekwondo Específico — Técnica y Cadera", objetivo: "Altura, control de cámara, encadenamientos", equipamiento: "Polea Baja · Tabla · Cojín · Pared", tkdDay: true,
+                    name: "VIERNES", emoji: "🎯", focus: "Pierna B (Desarrollo Unilateral + Cadera & Posterior)", objetivo: "Duración estimada: 70–75 min",
                     exercises: [
-                        { name: "Elevación rodilla polea baja", series: "4", reps: "10 por pierna", tempo: "2-1-2", descanso: "60s", how: "Tobillera a polea. Jala rodilla al pecho venciendo el peso. Baja lento.", tips: ["Ejercicio REY para sostener pierna en el aire", "No jales con la espalda"], pesoNota: "Poco peso (1.25/2.5kg). Repeticiones estrictas.", video: "https://www.youtube.com/results?search_query=elevación+rodilla+psoas+polea" },
-                        { name: "Equilibrio estático en cojín", series: "3", reps: "45s por pierna", tempo: "Control", descanso: "45s", how: "Un pie en cojín (descalzo). Levanta la otra en cámara. Mantén.", tips: ["Cierra ojos para dificultad x10", "Pivote de roca para patadas"], video: "https://www.youtube.com/results?search_query=equilibrio+bosu+una+pierna" },
-                        { name: "Equilibrio dinámico en tabla", series: "3", reps: "30s por pierna", tempo: "Control", descanso: "60s", how: "Un pie en tabla balance. Haz patadas lentas al aire con la otra.", tips: ["Tobillo de acero para soportar encadenamientos"], video: "https://www.youtube.com/results?search_query=equilibrio+dinamico+tabla+balance" },
-                        { name: "Flexibilidad activa (Frontal Lenta)", series: "3", reps: "8 por pierna", tempo: "4s subida/3s", descanso: "45s", how: "Apoyado pared. Sube pierna frontal recta LENTO. Sostén 3s.", tips: ["Bola del pie armada", "Aumenta altura real sin calentar"], video: "https://www.youtube.com/results?search_query=patada+frontal+lenta+activa" },
-                        { name: "Flexibilidad activa (Lateral Lenta)", series: "3", reps: "8 por pierna", tempo: "4s subida/3s", descanso: "45s", how: "Sube pierna lateral con filo del pie. Lento, rotando cadera.", tips: ["Enfócate en el filo del pie", "Corrige tus problemas de filo"], video: "https://www.youtube.com/results?search_query=patada+lateral+lenta+activa" },
-                        { name: "Encadenamiento lento (x2)", series: "4", reps: "6 combos/pierna", tempo: "Control", descanso: "60s", how: "Dollyo + Yeop lento. Recoge rodilla al pecho (cámara) sin tocar suelo.", tips: ["La rodilla al pecho te permite encadenar"], video: "https://www.youtube.com/results?search_query=encadenamiento+patadas+camara" },
-                        { name: "Activación de pie técnico", series: "2", reps: "15 por posición", tempo: "Conciencia", descanso: "30s", how: "Sentado. Arma: Bola, Filo y Talón. Mantén 2s.", tips: ["Mírate al espejo, técnica pura"], video: "https://www.youtube.com/results?search_query=posición+pie+filo+bola+talón" }
+                        { name: "Activación de potencia (Saltos horizontales)", series: "3", reps: "3 por pierna", descanso: "90s", how: "", tips: [], video: "" },
+                        { name: "Sentadilla Búlgara (con mancuernas / pesa rusa)", series: "3", reps: "8–10 por pierna", descanso: "90s", how: "", tips: [], video: "" },
+                        { name: "Peso muerto rumano a una pierna (con pesa rusa)", series: "3", reps: "8–10 por pierna", descanso: "90s", how: "", tips: [], video: "" },
+                        { name: "Equilibrio en tabla (Pistol parcial)", series: "3", reps: "8 por pierna", descanso: "75s", how: "Una pierna en tabla de balance. Mantén quieta la tabla.", tips: [], video: "https://www.youtube.com/results?search_query=tabla+balance+equilibrio+una+pierna" },
+                        { name: "Elevación de pantorrillas a una pierna", series: "4", reps: "12–15 por pierna", descanso: "60s", how: "", tips: [], video: "" },
+                        { name: "Jalón Pallof en polea (Core anti-rotación)", series: "3", reps: "12 por lado", descanso: "60s", how: "De lado a polea. Empuja brazos rectos al frente, resiste que el cable te gire.", tips: [], video: "https://www.youtube.com/results?search_query=pallof+press+polea" }
                     ]
                 }
             ],
@@ -425,6 +457,11 @@
 
         // CARGAR DB DESDE EL NAVEGADOR O USAR DEFAULT
         let db = JSON.parse(localStorage.getItem('entrenamiento_db_v2')) || defaultDB;
+
+        // Asegura que todo ejercicio de Rutina/Calistenia tenga un campo "pr" (récord personal)
+        [...db.rutina, ...db.calistenia].forEach(dia => {
+            dia.exercises.forEach(ex => { if (ex.pr === undefined) ex.pr = ""; });
+        });
 
         function saveDB() {
             localStorage.setItem('entrenamiento_db_v2', JSON.stringify(db));
@@ -529,6 +566,10 @@
                                  tipo === 'estiramiento' ? `${ex.muscle} · ${ex.duration} · ${ex.tkd}` : 
                                  `${ex.series} × ${ex.reps} · Desc: ${ex.descanso || '-'}`}
                             </div>
+                            ${(tipo === 'rutina' || tipo === 'calistenia') ? `
+                            <button class="pr-badge" onclick="event.stopPropagation(); abrirModalPR('${tipo}', ${diaIdx}, ${index})">
+                                🏆 PR: ${ex.pr ? ex.pr : '— Toca para agregar'}
+                            </button>` : ''}
                         </div>
                     </div>
                     <div class="card-actions">
@@ -600,6 +641,7 @@
             html += getProgresionDobleHTML();
             dia.exercises.forEach((ex, i) => { html += buildCardHtml(ex, i, 'calistenia', diaIdx); });
             html += `<button class="btn-add-new" onclick="abrirModalEdit('calistenia', ${diaIdx}, null)">➕ Agregar Nuevo Ejercicio</button>`;
+            html += getBalanceGeneralHTML();
             document.getElementById('content').innerHTML = html;
         }
 
@@ -787,6 +829,25 @@
                 `;
             }
             m.style.display = 'flex';
+        }
+
+        // RECORD PERSONAL (PR)
+        let refPR = {};
+        function abrirModalPR(tipo, diaIdx, exIdx) {
+            let ex = db[tipo][diaIdx].exercises[exIdx];
+            refPR = { tipo, diaIdx, exIdx };
+            document.getElementById('pr-input').value = ex.pr || '';
+            document.getElementById('prModal').style.display = 'flex';
+            document.getElementById('pr-input').focus();
+        }
+
+        function guardarPR() {
+            let val = document.getElementById('pr-input').value.trim();
+            db[refPR.tipo][refPR.diaIdx].exercises[refPR.exIdx].pr = val;
+            saveDB();
+            document.getElementById('prModal').style.display = 'none';
+            if (refPR.tipo === 'rutina') renderRutina(refPR.diaIdx);
+            else renderCalistenia(refPR.diaIdx);
         }
 
         // GUARDAR CAMBIOS DE EDICIÓN O CREACIÓN
